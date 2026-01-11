@@ -5,8 +5,9 @@ const router = express.Router();
 
 /**
  * STEP 1: Start OAuth
+ * URL: /auth/facebook
  */
-router.get("/auth/facebook", (req, res) => {
+router.get("/facebook", (req, res) => {
   if (!req.session) {
     return res.status(500).send("Session not initialized");
   }
@@ -22,20 +23,23 @@ router.get("/auth/facebook", (req, res) => {
     response_type: "code",
   });
 
-  res.redirect(`https://www.facebook.com/v19.0/dialog/oauth?${params.toString()}`);
+  res.redirect(
+    `https://www.facebook.com/v19.0/dialog/oauth?${params.toString()}`
+  );
 });
 
 /**
  * STEP 2: OAuth Callback
+ * URL: /auth/facebook/callback
  */
-router.get("/auth/facebook/callback", async (req, res) => {
+router.get("/facebook/callback", async (req, res) => {
   const { code, state } = req.query;
 
   if (!code) {
     return res.status(400).send("Missing authorization code");
   }
 
-  if (!req.session || !req.session.oauthState || state !== req.session.oauthState) {
+  if (!req.session || state !== req.session.oauthState) {
     console.error("OAuth state mismatch", {
       received: state,
       stored: req.session?.oauthState,
