@@ -1,0 +1,175 @@
+/* Reset & Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: linear-gradient(135deg, #f0f2f5, #d9e4ff);
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+/* Container */
+.container {
+  width: 850px;
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  border-top: 5px solid #3897f0;
+}
+
+/* Header */
+header h1 {
+  text-align: center;
+  font-size: 2.2rem;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+header p {
+  text-align: center;
+  color: #666;
+  margin-bottom: 25px;
+  font-size: 0.95rem;
+}
+
+/* Login button */
+.login-section {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-section button {
+  background: linear-gradient(45deg, #3897f0, #6c63ff);
+  padding: 12px 20px;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: 0.3s;
+}
+
+.login-section button:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+/* Accounts list */
+.accounts-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+#accountsList button {
+  padding: 8px 14px;
+  background: #6c63ff;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+#accountsList button:hover {
+  background: #574fd1;
+  transform: scale(1.05);
+}
+
+/* Form */
+.post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 30px;
+}
+
+.post-form label {
+  font-weight: 600;
+  color: #444;
+}
+
+.post-form input,
+.post-form select,
+.post-form textarea {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+.post-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+/* Submit button */
+.post-form button {
+  background: linear-gradient(45deg, #3897f0, #6c63ff);
+  padding: 14px;
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: 0.3s;
+}
+
+.post-form button:hover {
+  opacity: 0.9;
+  transform: scale(1.03);
+}
+
+/* Messages */
+#message {
+  text-align: center;
+  font-weight: bold;
+  font-size: 1rem;
+  margin-bottom: 15px;
+  color: green;
+}
+
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+}
+
+th, td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+th {
+  background: #f7f7f7;
+  color: #333;
+}
+
+td img {
+  max-width: 100px;
+  border-radius: 8px;
+}
+
+/* Status Colors */
+.status-scheduled { color: #007bff; font-weight: bold; }
+.status-published { color: #28a745; font-weight: bold; }
+.status-failed { color: #dc3545; font-weight: bold; }
+.status-reminder { color: #ffc107; font-weight: bold; }
+
+/* Responsive */
+@media (max-width: 880px) {
+  .container { width: 100%; padding: 20px; }
+  td img { max-width: 70px; }
+}

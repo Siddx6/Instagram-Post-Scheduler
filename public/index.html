@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instagram Post Scheduler</title>
+  <style>
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
+      border-bottom: 3px solid #f0f0f0;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .header-left h1 {
+      color: #1f2937;
+      margin-bottom: 5px;
+      font-size: 2.5em;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-info-text {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+      border: 2px solid #e5e7eb;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+      padding: 8px 16px;
+      font-size: 13px;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-success {
+      background: #10b981;
+      color: white;
+      padding: 8px 16px;
+      font-size: 13px;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .form-section {
+      background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+      padding: 30px;
+      border-radius: 15px;
+      margin-bottom: 40px;
+      border: 2px solid #e5e7eb;
+    }
+
+    .form-section h2 {
+      color: #1f2937;
+      margin-bottom: 25px;
+      font-size: 1.5em;
+      font-weight: 700;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #374151;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 14px;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      background: white;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+      line-height: 1.6;
+    }
+
+    .form-hint {
+      color: #6b7280;
+      font-size: 12px;
+      margin-top: 6px;
+      display: block;
+    }
+
+    .posts-section h2 {
+      color: #1f2937;
+      margin-bottom: 25px;
+      font-size: 1.8em;
+      font-weight: 700;
+    }
+
+    .posts-grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .post-card {
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 15px;
+      padding: 25px;
+      display: grid;
+      grid-template-columns: 120px 1fr auto;
+      gap: 25px;
+      align-items: start;
+      transition: all 0.3s ease;
+    }
+
+    .post-card:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      border-color: #667eea;
+      transform: translateY(-2px);
+    }
+
+    .post-image {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 12px;
+      background: #f3f4f6;
+      border: 2px solid #e5e7eb;
+    }
+
+    .post-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .post-caption {
+      color: #374151;
+      margin-bottom: 15px;
+      line-height: 1.6;
+      font-size: 14px;
+      word-wrap: break-word;
+    }
+
+    .post-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+
+    .post-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #f9fafb;
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+
+    .status {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status.published {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status.pending {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .status.failed {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .post-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .error-message {
+      color: #991b1b;
+      font-size: 12px;
+      margin-top: 10px;
+      padding: 10px;
+      background: #fee2e2;
+      border-radius: 8px;
+      border-left: 3px solid #ef4444;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: #6b7280;
+      font-size: 16px;
+    }
+
+    .spinner {
+      border: 3px solid #f3f4f6;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: #9ca3af;
+    }
+
+    .empty-state-icon {
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 20px;
+      opacity: 0.4;
+    }
+
+    .empty-state h3 {
+      font-size: 1.5em;
+      color: #6b7280;
+      margin-bottom: 10px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+    }
+
+    .login-prompt {
+      text-align: center;
+      padding: 60px 20px;
+      background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+      border-radius: 15px;
+      border: 2px dashed #d1d5db;
+    }
+
+    .login-prompt-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+    }
+
+    .login-prompt h2 {
+      color: #374151;
+      margin-bottom: 15px;
+      font-size: 1.8em;
+    }
+
+    .login-prompt p {
+      color: #6b7280;
+      margin-bottom: 25px;
+      font-size: 14px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 25px;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .header-right {
+        width: 100%;
+      }
+
+      .btn {
+        flex: 1;
+        justify-content: center;
+      }
+
+      .post-card {
+        grid-template-columns: 90px 1fr;
+        gap: 15px;
+        padding: 20px;
+      }
+      
+      .post-actions {
+        grid-column: 1 / -1;
+        flex-direction: row;
+        justify-content: flex-end;
+      }
+
+      .post-image {
+        width: 90px;
+        height: 90px;
+      }
+
+      .header-left h1 {
+        font-size: 2em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-left">
+        <h1>
+          <span>📸</span>
+          <span>Instagram Scheduler</span>
+        </h1>
+        <p class="user-info-text" id="user-info">Loading...</p>
+      </div>
+      <div class="header-right">
+        <a href="/auth/login" class="btn btn-primary" id="login-btn" style="display: none;">
+          🔗 Connect Instagram
+        </a>
+        <button class="btn btn-secondary" id="logout-btn" style="display: none;">
+          🚪 Logout
+        </button>
+      </div>
+    </div>
+
+    <div id="login-prompt" class="login-prompt">
+      <svg class="login-prompt-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      <h2>Welcome to Instagram Scheduler</h2>
+      <p>Connect your Instagram Business account to start scheduling posts</p>
+      <a href="/auth/login" class="btn btn-primary" style="font-size: 16px; padding: 15px 30px;">
+        🔗 Connect Instagram Account
+      </a>
+    </div>
+
+    <div id="app-content" style="display: none;">
+      <div class="form-section">
+        <h2>📝 Schedule New Post</h2>
+        
+        <div class="form-group">
+          <label for="account-select">Instagram Account</label>
+          <select id="account-select">
+            <option value="">-- Select Account --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="caption">Caption</label>
+          <textarea id="caption" placeholder="Write your caption here... Add emojis, hashtags, and mentions!"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="media-url">Image URL</label>
+          <input type="url" id="media-url" placeholder="https://example.com/image.jpg">
+          <small class="form-hint">
+            💡 Try: https://picsum.photos/1080/1080 for random images
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label for="scheduled-time">Schedule For</label>
+          <input type="datetime-local" id="scheduled-time">
+          <small class="form-hint">
+            ⏰ Posts will be published automatically at the scheduled time
+          </small>
+        </div>
+
+        <button class="btn btn-primary" id="schedule-btn" style="width: 100%; font-size: 16px;">
+          📅 Schedule Post
+        </button>
+      </div>
+
+      <div class="posts-section">
+        <h2>📋 Your Posts</h2>
+        <div id="posts-list" class="posts-grid">
+          <div class="loading">
+            <div class="spinner"></div>
+            Loading posts...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let accounts = [];
+
+    // Check auth status
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/auth/status');
+        const data = await res.json();
+        
+        if (data.authenticated) {
+          currentUser = data;
+          document.getElementById('user-info').textContent = `Welcome back, ${data.userName}! 👋`;
+          document.getElementById('login-btn').style.display = 'none';
+          document.getElementById('logout-btn').style.display = 'inline-flex';
+          document.getElementById('app-content').style.display = 'block';
+          document.getElementById('login-prompt').style.display = 'none';
+          loadAccounts();
+          loadPosts();
+        } else {
+          document.getElementById('user-info').textContent = 'Not connected';
+          document.getElementById('login-btn').style.display = 'inline-flex';
+          document.getElementById('logout-btn').style.display = 'none';
+          document.getElementById('login-prompt').style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Auth check failed:', err);
+        document.getElementById('user-info').textContent = 'Error loading user';
+      }
+    }
+
+    // Load accounts
+    async function loadAccounts() {
+      try {
+        const res = await fetch('/api/accounts');
+        accounts = await res.json();
+        
+        const select = document.getElementById('account-select');
+        select.innerHTML = '<option value="">-- Select Account --</option>';
+        
+        accounts.forEach(acc => {
+          const option = document.createElement('option');
+          option.value = acc.ig_user_id;
+          option.textContent = `${acc.page_name} (@${acc.ig_username})`;
+          select.appendChild(option);
+        });
+      } catch (err) {
+        console.error('Failed to load accounts:', err);
+      }
+    }
+
+    // Load posts
+    async function loadPosts() {
+      try {
+        const res = await fetch('/api/posts');
+        const posts = await res.json();
+        
+        const container = document.getElementById('posts-list');
+        
+        if (posts.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <h3>No posts yet</h3>
+              <p>Schedule your first Instagram post using the form above!</p>
+            </div>
+          `;
+          return;
+        }
+        
+        container.innerHTML = posts.map(post => `
+          <div class="post-card">
+            <img 
+              src="${post.media_url}" 
+              class="post-image" 
+              alt="Post preview" 
+              onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'120\'%3E%3Crect fill=\'%23f3f4f6\' width=\'120\' height=\'120\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' font-size=\'16\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%239ca3af\'%3E📷%3C/text%3E%3C/svg%3E'"
+            >
+            
+            <div class="post-details">
+              <div class="post-caption">${post.caption}</div>
+              <div class="post-meta">
+                <span class="post-meta-item">⏰ ${new Date(post.scheduled_time).toLocaleString()}</span>
+                <span class="post-meta-item">📄 ${post.page_name || 'Unknown'}</span>
+                <span class="status ${post.status}">${post.status}</span>
+              </div>
+              ${post.error_message ? `<div class="error-message">❌ ${post.error_message}</div>` : ''}
+            </div>
+            
+            <div class="post-actions">
+              ${post.status === 'pending' ? `
+                <button class="btn btn-success" onclick="testPublish(${post.id})">
+                  ▶️ Publish Now
+                </button>
+              ` : ''}
+              ${post.status !== 'published' ? `
+                <button class="btn btn-danger" onclick="deletePost(${post.id})">
+                  🗑️ Delete
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Failed to load posts:', err);
+        document.getElementById('posts-list').innerHTML = `
+          <div class="empty-state">
+            <h3>Failed to load posts</h3>
+            <p>Please refresh the page</p>
+          </div>
+        `;
+      }
+    }
+
+    // Schedule post
+    document.getElementById('schedule-btn').addEventListener('click', async () => {
+      const ig_user_id = document.getElementById('account-select').value;
+      const caption = document.getElementById('caption').value;
+      const media_url = document.getElementById('media-url').value;
+      const scheduled_time = document.getElementById('scheduled-time').value;
+
+      if (!ig_user_id || !caption || !media_url || !scheduled_time) {
+        alert('❌ Please fill in all fields');
+        return;
+      }
+
+      const btn = document.getElementById('schedule-btn');
+      btn.disabled = true;
+      btn.textContent = '⏳ Scheduling...';
+
+      try {
+        const res = await fetch('/api/schedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ig_user_id,
+            caption,
+            media_url,
+            scheduled_time: new Date(scheduled_time).toISOString()
+          })
+        });
+
+        if (res.ok) {
+          alert('✅ Post scheduled successfully!');
+          document.getElementById('caption').value = '';
+          document.getElementById('media-url').value = '';
+          const now = new Date();
+          now.setMinutes(now.getMinutes() + 1);
+          document.getElementById('scheduled-time').value = now.toISOString().slice(0, 16);
+          loadPosts();
+        } else {
+          const error = await res.json();
+          alert('❌ Failed to schedule: ' + error.error);
+        }
+      } catch (err) {
+        console.error('Schedule failed:', err);
+        alert('❌ Failed to schedule post. Please try again.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '📅 Schedule Post';
+      }
+    });
+
+    // Delete post
+    async function deletePost(id) {
+      if (!confirm('Are you sure you want to delete this post?')) return;
+
+      try {
+        const res = await fetch(`/api/posts/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          loadPosts();
+        } else {
+          alert('❌ Failed to delete post');
+        }
+      } catch (err) {
+        console.error('Delete failed:', err);
+        alert('❌ Failed to delete post');
+      }
+    }
+
+    // Test publish
+    async function testPublish(id) {
+      if (!confirm('⚡ Publish this post immediately?')) return;
+
+      try {
+        const res = await fetch(`/api/test-publish/${id}`, { method: 'POST' });
+        const data = await res.json();
+        
+        if (res.ok) {
+          alert('✅ Post published successfully!\n\nInstagram ID: ' + data.instagram_id);
+          loadPosts();
+        } else {
+          alert('❌ Failed to publish:\n\n' + data.error);
+          loadPosts();
+        }
+      } catch (err) {
+        console.error('Publish failed:', err);
+        alert('❌ Failed to publish post');
+      }
+    }
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      if (!confirm('Are you sure you want to logout?')) return;
+      
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        location.reload();
+      } catch (err) {
+        console.error('Logout failed:', err);
+      }
+    });
+
+    // Set default scheduled time (1 minute from now)
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 1);
+    document.getElementById('scheduled-time').value = now.toISOString().slice(0, 16);
+
+    // Initialize
+    checkAuth();
+    
+    // Refresh posts every 30 seconds
+    setInterval(() => {
+      if (currentUser) {
+        loadPosts();
+      }
+    }, 30000);
+  </script>
+</body>
+</html>
