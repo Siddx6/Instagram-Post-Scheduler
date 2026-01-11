@@ -26,11 +26,13 @@ await initDB();
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === "production"
-    ? process.env.PRODUCTION_URL
-    : "http://localhost:3000",
+  origin: [
+    "https://instagram-post-scheduler.onrender.com",
+    "http://localhost:3000"
+  ],
   credentials: true
 }));
+
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
