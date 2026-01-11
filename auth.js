@@ -1,6 +1,5 @@
 import express from "express";
 import crypto from "crypto";
-import fetch from "node-fetch";
 
 const router = express.Router();
 
@@ -23,7 +22,7 @@ router.get("/auth/facebook", (req, res) => {
     response_type: "code",
   });
 
-  res.redirect(`https://www.facebook.com/v19.0/dialog/oauth?${params}`);
+  res.redirect(`https://www.facebook.com/v19.0/dialog/oauth?${params.toString()}`);
 });
 
 /**
@@ -32,7 +31,6 @@ router.get("/auth/facebook", (req, res) => {
 router.get("/auth/facebook/callback", async (req, res) => {
   const { code, state } = req.query;
 
-  // 🔴 REQUIRED FIX #1 — explicit checks
   if (!code) {
     return res.status(400).send("Missing authorization code");
   }
@@ -45,13 +43,11 @@ router.get("/auth/facebook/callback", async (req, res) => {
     return res.status(400).send("Invalid OAuth state");
   }
 
-  // cleanup
   delete req.session.oauthState;
 
   try {
-    // Exchange code for access token
     const tokenRes = await fetch(
-      `https://graph.facebook.com/v19.0/oauth/access_token?` +
+      "https://graph.facebook.com/v19.0/oauth/access_token?" +
         new URLSearchParams({
           client_id: process.env.FACEBOOK_APP_ID,
           client_secret: process.env.FACEBOOK_APP_SECRET,
@@ -63,14 +59,12 @@ router.get("/auth/facebook/callback", async (req, res) => {
     const tokenData = await tokenRes.json();
 
     if (!tokenData.access_token) {
-      console.error("Token exchange failed", tokenData);
+      console.error("Token exchange failed:", tokenData);
       return res.status(500).send("Failed to get access token");
     }
 
-    // Store token in session (or DB if you already do that)
     req.session.facebookAccessToken = tokenData.access_token;
 
-    // Redirect back to app
     res.redirect("/");
   } catch (err) {
     console.error("OAuth callback error:", err);
