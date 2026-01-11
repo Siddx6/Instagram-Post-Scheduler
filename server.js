@@ -35,6 +35,14 @@ app.use(cors({
 
 
 app.use(express.json());
+
+// ✅ API routes FIRST
+app.use('/auth', authRouter);
+
+// ✅ protected API routes
+// (your /api/posts, /api/schedule, etc already exist below)
+
+// ✅ static files LAST
 app.use(express.static(path.join(__dirname, "public")));
 
 // ✅ FIXED SESSION CONFIG (DO NOT CHANGE)
