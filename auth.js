@@ -10,6 +10,9 @@ const router = express.Router();
 const FB_VERSION = process.env.FB_GRAPH_VERSION || "v21.0";
 const APP_ID = process.env.FB_APP_ID;
 const REDIRECT_URI = process.env.FB_REDIRECT_URI;
+console.log("FB_APP_ID:", process.env.FB_APP_ID);
+console.log("FB_REDIRECT_URI:", process.env.FB_REDIRECT_URI);
+
 
 // Redirect user to Facebook login
 router.get("/login", (req, res) => {
