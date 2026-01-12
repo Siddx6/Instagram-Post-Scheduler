@@ -23,10 +23,15 @@ const __dirname = path.dirname(__filename);
 await initDB();
 
 // --------------------
+// TRUST PROXY (CRITICAL FOR RENDER)
+// --------------------
+app.set("trust proxy", 1); // Trust first proxy (Render's load balancer)
+
+// --------------------
 // CORE MIDDLEWARE
 // --------------------
 const allowedOrigins = isProduction
-  ? [process.env.PRODUCTION_URL, process.env.FB_REDIRECT_URI]
+  ? [process.env.PRODUCTION_URL]
   : ["http://localhost:3000", "http://127.0.0.1:3000"];
 
 app.use(
@@ -34,10 +39,17 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps or curl)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+      
+      // Allow if origin starts with any allowed origin
+      const isAllowed = allowedOrigins.some(allowed => 
+        origin === allowed || origin.startsWith(allowed)
+      );
+      
+      if (isAllowed) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        console.log("CORS blocked origin:", origin);
+        callback(null, false);
       }
     },
     credentials: true,
@@ -48,21 +60,37 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // --------------------
-// SESSION
+// SESSION (FIXED FOR RENDER)
 // --------------------
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: isProduction,
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      sameSite: isProduction ? "none" : "lax",
-    },
-  })
-);
+const sessionConfig = {
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  name: "sessionId", // Custom name to avoid conflicts
+  cookie: {
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    httpOnly: true,
+  }
+};
+
+// Production-specific settings for Render
+if (isProduction) {
+  sessionConfig.cookie.secure = true; // HTTPS only
+  sessionConfig.cookie.sameSite = "none"; // Allow cross-site cookies
+  sessionConfig.proxy = true; // Trust proxy headers
+} else {
+  sessionConfig.cookie.secure = false;
+  sessionConfig.cookie.sameSite = "lax";
+}
+
+app.use(session(sessionConfig));
+
+// Debug middleware to log session
+app.use((req, res, next) => {
+  console.log("Session ID:", req.sessionID);
+  console.log("Session data:", req.session);
+  next();
+});
 
 // --------------------
 // AUTH ROUTES
@@ -83,6 +111,7 @@ function requireAuth(req, res, next) {
 // API ROUTES
 // --------------------
 app.get("/api/auth/status", (req, res) => {
+  console.log("Auth status check - Session:", req.session);
   if (req.session.userId) {
     res.json({ 
       authenticated: true, 
@@ -301,7 +330,8 @@ app.get("/health", (req, res) => {
   res.json({ 
     status: "ok", 
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV 
+    environment: process.env.NODE_ENV,
+    sessionConfigured: !!req.sessionID 
   });
 });
 
@@ -311,7 +341,11 @@ app.get("/health", (req, res) => {
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
+  if (!req.path.startsWith("/api") && !req.path.startsWith("/auth")) {
+    res.sendFile(path.join(__dirname, "public/index.html"));
+  } else {
+    res.status(404).json({ error: "Not found" });
+  }
 });
 
 // --------------------
@@ -329,7 +363,9 @@ cron.schedule("* * * * *", async () => {
       [now]
     );
 
-    console.log(`📅 Checking scheduled posts... Found: ${posts.length}`);
+    if (posts.length > 0) {
+      console.log(`📅 Found ${posts.length} posts to publish`);
+    }
 
     for (const post of posts) {
       try {
@@ -399,4 +435,6 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📝 Environment: ${process.env.NODE_ENV}`);
   console.log(`🔗 Redirect URI: ${process.env.FB_REDIRECT_URI}`);
+  console.log(`🍪 Session secure: ${sessionConfig.cookie.secure}`);
+  console.log(`🍪 Session sameSite: ${sessionConfig.cookie.sameSite}`);
 });
