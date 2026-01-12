@@ -96,6 +96,8 @@ router.get("/facebook/callback", async (req, res) => {
 
     const longToken = longTokenRes.data.access_token;
     const expiresIn = longTokenRes.data.expires_in; // seconds
+    
+    console.log("Long-lived token response:", longTokenRes.data);
 
     // Step 3: Get user info
     const userRes = await axios.get(
@@ -111,8 +113,17 @@ router.get("/facebook/callback", async (req, res) => {
     const fbUserId = userRes.data.id;
     const userName = userRes.data.name;
 
-    // Step 4: Store or update user in database
-    const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
+    // Step 4: Calculate expiration date
+    // Default to 60 days if expires_in is not provided or invalid
+    let expiresAt;
+    if (expiresIn && !isNaN(expiresIn)) {
+      expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString();
+    } else {
+      // Default to 60 days (long-lived token duration)
+      expiresAt = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+    }
+    
+    console.log("Token expires at:", expiresAt);
 
     const existingUser = await db.get(
       "SELECT * FROM users WHERE fb_user_id = ?",
@@ -137,7 +148,10 @@ router.get("/facebook/callback", async (req, res) => {
       userId = result.lastID;
     }
 
-    // Step 5: Set session
+    
+    console.log("Token expires at:", expiresAt);
+
+    // Step 5: Store or update user in database
     req.session.userId = userId;
     req.session.userName = userName;
     req.session.facebookAccessToken = longToken;
@@ -146,8 +160,18 @@ router.get("/facebook/callback", async (req, res) => {
 
     res.redirect("/?auth=success");
   } catch (err) {
-    console.error("OAuth callback error:", err.response?.data || err.message);
-    res.redirect("/?error=authentication_failed");
+    console.error("OAuth callback error:", err);
+    console.error("Error details:", err.response?.data || err.message);
+    
+    // Provide more specific error messages
+    let errorMsg = "authentication_failed";
+    if (err.response?.data?.error?.message) {
+      errorMsg = encodeURIComponent(err.response.data.error.message);
+    } else if (err.message) {
+      errorMsg = encodeURIComponent(err.message);
+    }
+    
+    res.redirect(`/?error=${errorMsg}`);
   }
 });
 
